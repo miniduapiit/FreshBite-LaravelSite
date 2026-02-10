@@ -21,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['validate.api'])->group(function () {
     Route::get('/products', [ProductController::class, 'index'])->name('api.products.index');
     Route::get('/products/{id}', [ProductController::class, 'show'])->name('api.products.show');
+    Route::prefix('v1')->group(function () {
+        Route::get('/products', [ProductController::class, 'index']);
+        Route::get('/products/{id}', [ProductController::class, 'show']);
+    });
 });
 
 // Authentication routes (rate limited to prevent brute force)
