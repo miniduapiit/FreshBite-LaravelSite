@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\VendorProductController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Product;
 
 // ============================================
 // ADMIN AUTH ROUTES (Public - for login)
@@ -77,6 +78,42 @@ Route::get('/contact', function () {
 // Public product routes (for detailed product views)
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+
+// ✅ Mobile/Android JSON endpoints (NOT /api/*, so nginx should forward it)
+Route::get('/products-json', function () {
+    $products = Product::query()
+        ->select([
+            'id',
+            'supplier_id',
+            'category_id',
+            'name',
+            'slug',
+            'description',
+            'price',
+            'image_url',
+            'is_active',
+            'approval_status',
+            'stock_quantity',
+            'created_at',
+            'updated_at',
+        ])
+        ->whereNull('deleted_at')
+        ->where('is_active', 1)
+        ->orderByDesc('id')
+        ->get();
+
+    return response()->json($products);
+});
+
+Route::get('/products-json/{id}', function ($id) {
+    $product = Product::query()
+        ->where('id', $id)
+        ->whereNull('deleted_at')
+        ->firstOrFail();
+
+    return response()->json($product);
+});
+
 
 Route::middleware([
     'auth:sanctum',
